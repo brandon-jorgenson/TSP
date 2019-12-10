@@ -12,6 +12,7 @@ else:
 import time
 import numpy as np
 import random
+import math
 from TSPClasses import *
 import heapq
 
@@ -69,27 +70,32 @@ class TSPSolver:
     def fancy(self, time_allowance=60.0):
         start_time = time.time()
         results = self.defaultRandomTour()
+        temperature = 10000
+        coolingRate = .9
         iterations = 0
         results['count'] = 0
         results['max'] = 0
-        # Generate the first cost matrix and search state and add it to the queue
         cities = self._scenario.getCities()
-        while time.time() - start_time < time_allowance and iterations < 1000000:
+        # Randomly swap cities to find a better path, may accept a worse path if temperature high
+        while time.time() - start_time < time_allowance and temperature > 1:
             swap1 = random.randint(0, len(cities) - 1)
             swap2 = random.randint(0, len(cities) - 1)
             cities[swap1], cities[swap2] = cities[swap2], cities[swap1]
             newSolution = TSPSolution(cities)
-            if newSolution.cost < results['cost']:
+            #print(math.exp((results['cost'] - newSolution.cost) / temperature))
+            if newSolution.cost < results['cost'] or np.exp(-(results['cost'] - newSolution.cost) / temperature) < random.random():
                 results['cost'] = newSolution.cost
                 results['bssf'] = newSolution
                 results['count'] += 1
-                print(results['cost'])
+                #print(results['cost'])
             else:
                 cities[swap1], cities[swap2] = cities[swap2], cities[swap1]
             iterations += 1
+            temperature *= .9999
 
         end_time = time.time()
         # Add remaining search states to the number pruned
+        print(iterations)
         results['time'] = end_time - start_time
 
         return results
