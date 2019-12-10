@@ -70,12 +70,12 @@ class TSPSolver:
     def fancy(self, time_allowance=60.0):
         start_time = time.time()
         results = self.defaultRandomTour()
-        temperature = 10000
-        coolingRate = .9
+        coolingRate = .9999
         iterations = 0
         results['count'] = 0
         results['max'] = 0
         cities = self._scenario.getCities()
+        temperature = 100000 * len(cities)
         # Randomly swap cities to find a better path, may accept a worse path if temperature high
         while time.time() - start_time < time_allowance and temperature > 1:
             swap1 = random.randint(0, len(cities) - 1)
@@ -91,7 +91,8 @@ class TSPSolver:
             else:
                 cities[swap1], cities[swap2] = cities[swap2], cities[swap1]
             iterations += 1
-            temperature *= .9999
+            temperature *= coolingRate
+            print(temperature)
 
         end_time = time.time()
         # Add remaining search states to the number pruned
