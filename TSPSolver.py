@@ -113,15 +113,12 @@ class TSPSolver:
         #                 break
         #     return solution
 
-
-
-        # Randomly swap cities to find a better path, may accept a worse path if temperature high
         while time.time() - start_time < time_allowance and temperature > 1:
             newSolution, revertPath = chooseNewPath()
-            #print(math.exp((results['cost'] - newSolution.cost) / temperature))
-            if newSolution.cost < results['cost'] or (newSolution.cost != np.inf and np.exp(-1000 * (results['cost'] - newSolution.cost) / temperature) < random.random()):
+            # May accept a worse path if temperature high
+            if newSolution.cost < results['cost'] or (newSolution.cost != np.inf and np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random()):
                 results['cost'] = newSolution.cost
-                results['bssf'] = newSolution
+                results['soln'] = newSolution
                 results['count'] += 1
                 #print(results['cost'])
             else:
