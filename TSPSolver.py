@@ -76,7 +76,8 @@ class TSPSolver:
         results['count'] = 0
         results['max'] = 0
         cities = self._scenario.getCities()
-        temperature = 100000 * len(cities)
+        startingTemperature = 100000 * len(cities)
+        temperature = startingTemperature
 
         def chooseNewPath():
             solution = TSPSolution(cities)
@@ -115,11 +116,14 @@ class TSPSolver:
 
         while time.time() - start_time < time_allowance and temperature > 1:
             newSolution, revertPath = chooseNewPath()
+            #print(newSolution.cost)
             # May accept a worse path if temperature high
-            if newSolution.cost < results['cost'] or (newSolution.cost != np.inf and np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random()):
-                results['cost'] = newSolution.cost
-                results['soln'] = newSolution
-                results['count'] += 1
+            if newSolution.cost < results['cost'] or np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random() or (temperature > startingTemperature / 2 and newSolution.cost == np.inf):
+                print(newSolution.cost)
+                if newSolution.cost != np.inf:
+                    results['cost'] = newSolution.cost
+                    results['soln'] = newSolution
+                    results['count'] += 1
                 #print(results['cost'])
             else:
                 revertPath()
