@@ -11,6 +11,7 @@ else:
 
 import time
 import numpy as np
+import sys
 import random
 import math
 from TSPClasses import *
@@ -76,23 +77,58 @@ class TSPSolver:
         results['max'] = 0
         cities = self._scenario.getCities()
         temperature = 100000 * len(cities)
+
+        def chooseNewPath():
+            solution = TSPSolution(cities)
+            cityIndex = random.randint(0, len(cities) - 1)
+            swapTarget = random.randint(0, len(cities) - 1)
+            foundSwap = swapTarget
+            for i in range(len(cities)):
+                swapTarget = (foundSwap + i) % len(cities)
+                cities[cityIndex], cities[swapTarget] = cities[swapTarget], cities[cityIndex]
+                foundSwap = swapTarget
+                if cities[cityIndex].costTo(cities[(cityIndex + 1) % len(cities)]) < np.inf and cities[cityIndex].costTo(cities[(cityIndex - 1 )]) < np.inf:
+                    if cities[swapTarget].costTo(cities[(swapTarget + 1) % len(cities)]) < np.inf and cities[swapTarget].costTo(cities[swapTarget - 1]) < np.inf:
+                        solution = TSPSolution(cities)
+                        break
+                cities[cityIndex], cities[swapTarget] = cities[swapTarget], cities[cityIndex]
+
+            def revertNewPath():
+                cities[cityIndex], cities[foundSwap] = cities[foundSwap], cities[cityIndex]
+
+            return solution, revertNewPath
+
+        # def chooseNewPath():
+        #     solution = TSPSolution(cities)
+        #     citiesCopy = cities[:]
+        #     cityIndex = random.randint(0, len(citiesCopy) - 1)
+        #     swapTarget = cityIndex 
+        #     for i in range(len(citiesCopy) - 1):
+        #         newSwapTarget = (swapTarget + 1) % len(citiesCopy)
+        #         citiesCopy[newSwapTarget], citiesCopy[swapTarget] = citiesCopy[swapTarget], citiesCopy[newSwapTarget]
+        #         swapTarget = newSwapTarget
+        #         if citiesCopy[newSwapTarget].costTo(citiesCopy[(newSwapTarget + 1) % len(citiesCopy)]) < np.inf and citiesCopy[newSwapTarget].costTo(citiesCopy[(newSwapTarget - 1 )]) < np.inf:
+        #             if citiesCopy[swapTarget].costTo(citiesCopy[(swapTarget + 1) % len(citiesCopy)]) < np.inf and citiesCopy[swapTarget].costTo(citiesCopy[swapTarget - 1]) < np.inf:
+        #                 solution = TSPSolution(citiesCopy)
+        #                 break
+        #     return solution
+
+
+
         # Randomly swap cities to find a better path, may accept a worse path if temperature high
         while time.time() - start_time < time_allowance and temperature > 1:
-            swap1 = random.randint(0, len(cities) - 1)
-            swap2 = random.randint(0, len(cities) - 1)
-            cities[swap1], cities[swap2] = cities[swap2], cities[swap1]
-            newSolution = TSPSolution(cities)
+            newSolution, revertPath = chooseNewPath()
             #print(math.exp((results['cost'] - newSolution.cost) / temperature))
-            if newSolution.cost < results['cost'] or np.exp(-(results['cost'] - newSolution.cost) / temperature) < random.random():
+            if newSolution.cost < results['cost'] or (newSolution.cost != np.inf and np.exp(-1000 * (results['cost'] - newSolution.cost) / temperature) < random.random()):
                 results['cost'] = newSolution.cost
                 results['bssf'] = newSolution
                 results['count'] += 1
                 #print(results['cost'])
             else:
-                cities[swap1], cities[swap2] = cities[swap2], cities[swap1]
+                revertPath()
             iterations += 1
             temperature *= coolingRate
-            print(temperature)
+            # print(temperature)
 
         end_time = time.time()
         # Add remaining search states to the number pruned
