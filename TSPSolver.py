@@ -57,7 +57,60 @@ class TSPSolver:
         return results
 
     def greedy(self, time_allowance=60.0):
-        pass
+        results = {}
+        cities = self._scenario.getCities()
+        ncities = len(cities)
+        foundTour = False
+        bssf = None
+        count = 0
+
+        start_time = time.time()
+        for start in range(ncities):
+            # Track cities that have been visited
+            visited = [False] * ncities
+            # Pick an arbitrary start city
+            start_city = cities[start]
+            visited[start_city._index] = True
+            # Construct route
+            route = [start_city]
+            cost = 0
+            for i in range(ncities):
+                # Find shortest path to another city
+                next_city = None
+                next_cost = math.inf
+                for j in range(ncities):
+                    connection_cost = route[-1].costTo(cities[j])
+                    if not visited[j] and connection_cost < next_cost:
+                        next_city = cities[j]
+                        next_cost = connection_cost
+                # Can't go anywhere new
+                if next_city == None:
+                    break
+                    cost = math.inf
+                # Add city
+                route.append(next_city)
+                cost += next_cost
+                visited[next_city._index] = True
+
+            # Connect end back to beginning
+            cost += route[-1].costTo(start_city)
+
+            count += 1
+            if cost is not math.inf:
+                solution = TSPSolution(route)
+                if not foundTour or  solution.cost < bssf.cost:
+                    bssf = solution
+                foundTour = True
+
+        end_time = time.time()
+        results['cost'] = bssf.cost if foundTour else math.inf
+        results['time'] = end_time - start_time
+        results['count'] = count
+        results['soln'] = bssf
+        results['max'] = None
+        results['total'] = None
+        results['pruned'] = None
+        return results
 
     ''' <summary>
     	This is the entry point for the algorithm you'll write for your group project.
