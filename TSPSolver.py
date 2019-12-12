@@ -123,12 +123,17 @@ class TSPSolver:
 
     def fancy(self, time_allowance=60.0):
         start_time = time.time()
-        results = self.defaultRandomTour()
+        results = self.greedy()
         coolingRate = .9999
+        infiniteDivisor = 0
         iterations = 0
         results['count'] = 0
         results['max'] = 0
-        cities = self._scenario.getCities()
+        cities = results['soln'].route
+        if len(cities) < 50:
+            infiniteDivisor = 1.5
+        else:
+            infiniteDivisor = 2
         startingTemperature = 100000 * len(cities)
         temperature = startingTemperature
 
@@ -169,20 +174,16 @@ class TSPSolver:
 
         while time.time() - start_time < time_allowance and temperature > 1:
             newSolution, revertPath = chooseNewPath()
-            #print(newSolution.cost)
             # May accept a worse path if temperature high
-            if newSolution.cost < results['cost'] or np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random() or (temperature > startingTemperature / 2 and newSolution.cost == np.inf):
-                print(newSolution.cost)
+            if newSolution.cost < results['cost'] or np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random() or (temperature > startingTemperature / infiniteDivisor and newSolution.cost == np.inf):
                 if newSolution.cost != np.inf:
                     results['cost'] = newSolution.cost
                     results['soln'] = newSolution
                     results['count'] += 1
-                #print(results['cost'])
             else:
                 revertPath()
             iterations += 1
             temperature *= coolingRate
-            # print(temperature)
 
         end_time = time.time()
         # Add remaining search states to the number pruned
@@ -195,7 +196,7 @@ class TSPSolver:
     # takes longer than the time_allowance to run
     def branchAndBound(self, time_allowance=60.0):
         start_time = time.time()
-        results = self.defaultRandomTour()
+        results = self.greedy()
         results['count'] = 0
         results['max'] = 0
         results['total'] = 1
