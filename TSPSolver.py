@@ -178,9 +178,8 @@ class TSPSolver:
             # May accept a worse path if temperature high
             if newSolution.cost < results['cost'] or np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random() or (temperature > startingTemperature / infiniteDivisor and newSolution.cost == np.inf):
                 if newSolution.cost != np.inf:
-                    print(newSolution.cost)
                     results['cost'] = newSolution.cost
-                    results['soln'] = copy.deepcopy(newSolution)
+                    results['soln'] = TSPSolution(newSolution.route)
                     results['count'] += 1
             else:
                 revertPath()
