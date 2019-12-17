@@ -14,6 +14,7 @@ import numpy as np
 import sys
 import random
 import math
+import copy
 from TSPClasses import *
 import heapq
 
@@ -129,7 +130,7 @@ class TSPSolver:
         iterations = 0
         results['count'] = 0
         results['max'] = 0
-        cities = results['soln'].route
+        cities = results['soln'].route.copy()
         if len(cities) < 50:
             infiniteDivisor = 1.5
         else:
@@ -177,8 +178,9 @@ class TSPSolver:
             # May accept a worse path if temperature high
             if newSolution.cost < results['cost'] or np.exp(100*(results['cost'] - newSolution.cost) / temperature) > random.random() or (temperature > startingTemperature / infiniteDivisor and newSolution.cost == np.inf):
                 if newSolution.cost != np.inf:
+                    print(newSolution.cost)
                     results['cost'] = newSolution.cost
-                    results['soln'] = newSolution
+                    results['soln'] = copy.deepcopy(newSolution)
                     results['count'] += 1
             else:
                 revertPath()
