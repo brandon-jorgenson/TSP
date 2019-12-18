@@ -86,8 +86,8 @@ class TSPSolver:
                         next_cost = connection_cost
                 # Can't go anywhere new
                 if next_city == None:
-                    break
                     cost = math.inf
+                    break
                 # Add city
                 route.append(next_city)
                 cost += next_cost
@@ -97,7 +97,7 @@ class TSPSolver:
             cost += route[-1].costTo(start_city)
 
             count += 1
-            if cost is not math.inf:
+            if len(route) is ncities and cost is not math.inf:
                 solution = TSPSolution(route)
                 if not foundTour or  solution.cost < bssf.cost:
                     bssf = solution
